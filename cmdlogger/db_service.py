@@ -37,21 +37,21 @@ class DBConnectionPoolService:
         """
         Release prior connection
         """
-        with self._locks[db_path]:
+        with self.lock:
             self._pools[db_path].put(conn)
 
     def clear_all(self):
         """
         Clear all connections to all DB
         """
-
-        for _, pool in self._pools.items():
-            while not pool.empty():
-                try:
-                    conn = pool.get_nowait()
-                    conn.close()
-                except:
-                    continue
+        with self.lock:
+            for _, pool in self._pools.items():
+                while not pool.empty():
+                    try:
+                        conn = pool.get_nowait()
+                        conn.close()
+                    except:
+                        continue
 
 
 class DatabaseService:
